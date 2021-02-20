@@ -4,6 +4,8 @@ import userModel from "../../src/authentication/user.model";
 const request = require("supertest");
 
 let app = new App([new authController()], 34523);
+let token: any = null;
+let refreshToken: any = null;
 
 afterAll(async () => {
   await userModel.deleteOne({ email: "leoteste@gmail.com" });
@@ -33,6 +35,8 @@ describe("Authentication", () => {
       email: "leoteste@gmail.com",
       password: "leo160897",
     });
+    token = response.body.token;
+    refreshToken = response.body.refreshToken;
     expect(response.status).toBe(200);
   });
 
@@ -42,5 +46,11 @@ describe("Authentication", () => {
       password: "leo123",
     });
     expect(response.status).toBe(401);
+  });
+
+  it("should refresh the token with success", async () => {
+    const response = await request(app.app).post("/auth/refreshToken").send({
+      refreshToken: refreshToken,
+    });
   });
 });

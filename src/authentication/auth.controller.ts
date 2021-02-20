@@ -3,6 +3,7 @@ import jwt from "jsonwebtoken";
 import userModel from "./user.model";
 import userInterface from "./user.interface";
 import bcrypt from "bcrypt";
+import refreshTokenMiddleware from "../middlewares/refresh";
 
 class AuthController {
   public path = "/auth";
@@ -16,6 +17,11 @@ class AuthController {
   private initializeRoutes() {
     this.router.post(`${this.path}/signup`, this.signup);
     this.router.post(`${this.path}/login`, this.login);
+    this.router.post(
+      `${this.path}/refreshToken`,
+      refreshTokenMiddleware,
+      this.refreshToken
+    );
   }
 
   private createTokens = (email: string) => {
@@ -97,6 +103,15 @@ class AuthController {
         .status(500)
         .json({ message: "Por favor, preencha todos os campos obrigatórios." });
     }
+  };
+
+  private refreshToken = async (
+    request: express.Request,
+    response: express.Response,
+    next: express.NextFunction
+  ) => {
+    let token = this.createTokens(response.locals.decoded.email);
+    return response.json({ ...token, message: "Token renovado com sucesso!" });
   };
 }
 
