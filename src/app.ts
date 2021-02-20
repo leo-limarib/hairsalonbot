@@ -3,6 +3,7 @@ import http from "http";
 import * as bodyParser from "body-parser";
 import path from "path";
 import mongoose from "mongoose";
+import errorMiddleware from "./middlewares/error.middleware";
 
 class App {
   public app: express.Application;
@@ -16,6 +17,12 @@ class App {
     this.connectToDatabase();
     this.initializeMiddlewares();
     this.initializeControllers(controllers);
+    this.initializeErrorMiddleware();
+  }
+
+  private connectToDatabase() {
+    mongoose.connect(`mongodb://localhost:27017/HairSalonBot`);
+    console.log(`Connected to mongodb://localhost:27017/HairSalonBot`);
   }
 
   private initializeMiddlewares() {
@@ -30,10 +37,9 @@ class App {
     });
   }
 
-  private connectToDatabase() {
-    mongoose.connect(`mongodb://localhost:27017/HairSalonBot`);
-    console.log(`Connected to mongodb://localhost:27017/HairSalonBot`);
-  }
+  private initializeErrorMiddleware = () => {
+    this.app.use(errorMiddleware);
+  };
 
   public listen() {
     this.server.listen(this.port, () => {
