@@ -7,8 +7,9 @@ let checkToken = (
   next: express.NextFunction
 ) => {
   let token: any = req.headers["access-token"];
+  let secret: string = process.env.SECRET || "dev-secret";
   if (token) {
-    jwt.verify(token, "hairsalonsecret", (err: any, decoded: any) => {
+    jwt.verify(token, secret, (err: any, decoded: any) => {
       if (err) return res.status(400).json({ message: "Invalid token." });
       else {
         res.locals.decoded = decoded;

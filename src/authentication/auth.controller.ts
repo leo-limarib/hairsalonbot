@@ -15,14 +15,26 @@ class AuthController {
 
   private initializeRoutes() {
     this.router.post(`${this.path}/signup`, this.signup);
+    this.router.post(`${this.path}/login`, this.login);
   }
+
+  private createTokens = (email: string) => {
+    let secret: string = process.env.SECRET || "dev-secret";
+    let refSecret: string = process.env.REFRESH_SECRET || "dev-refresh-secret";
+    let token = jwt.sign({ email: email }, secret, {
+      expiresIn: "24h",
+    });
+    let refreshToken = jwt.sign({ email: email }, refSecret, {
+      expiresIn: "48h",
+    });
+    return { token, refreshToken };
+  };
 
   private signup = async (
     request: express.Request,
     response: express.Response,
     next: express.NextFunction
   ) => {
-    //REFACTOR: Create a validation middleware for new users.
     if (request.body.email && request.body.password && request.body.name) {
       let userExists = await this.user.findOne({ email: request.body.email });
       if (userExists) {
@@ -36,26 +48,54 @@ class AuthController {
           ...userData,
           password: hashedPass,
         });
-        let token = jwt.sign({ email: userData.email }, "hairsalonsecret", {
-          expiresIn: "24h",
-        });
-        let refreshToken = jwt.sign(
-          { email: request.body.email },
-          "hairsalonrefreshsecret",
-          {
-            expiresIn: "48h",
-          }
-        );
+        let tokens = this.createTokens(userData.email);
         response.json({
-          message: "Authentication successful!",
-          token: token,
-          refreshToken: refreshToken,
+          message: "Signup successful!",
+          token: tokens.token,
+          refreshToken: tokens.refreshToken,
         });
       }
     } else {
       return response
         .status(500)
         .json({ message: "Por favor, informe todos os campos." });
+    }
+  };
+
+  private login = async (
+    request: express.Request,
+    response: express.Response,
+    next: express.NextFunction
+  ) => {
+    //TODO:REFACTOR - Create a proper validation middleware.
+    if (request.body.email && request.body.password) {
+      let user = await this.user.findOne({ email: request.body.email });
+      if (user) {
+        let passMatch = bcrypt.compareSync(
+          request.body.password,
+          user.password
+        );
+        if (passMatch) {
+          let tokens = this.createTokens(user.email);
+          response.json({
+            message: "Login successful!",
+            token: tokens.token,
+            refreshToken: tokens.refreshToken,
+          });
+        } else {
+          return response.status(401).json({
+            message: "Email e/ou senha incorretos.",
+          });
+        }
+      } else {
+        return response.status(401).json({
+          message: "Email e/ou senha incorretos.",
+        });
+      }
+    } else {
+      return response
+        .status(500)
+        .json({ message: "Por favor, preencha todos os campos obrigatórios." });
     }
   };
 }
