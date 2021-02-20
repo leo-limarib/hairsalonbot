@@ -35,4 +35,12 @@ describe("Authentication", () => {
     });
     expect(response.status).toBe(200);
   });
+
+  it("should receive a 401 status (wrong password)", async () => {
+    const response = await request(app.app).post("/auth/login").send({
+      email: "leoteste@gmail.com",
+      password: "leo123",
+    });
+    expect(response.status).toBe(401);
+  });
 });
