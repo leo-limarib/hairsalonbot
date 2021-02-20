@@ -1,5 +1,6 @@
 import jwt from "jsonwebtoken";
 import express from "express";
+import HttpException from "../exceptions/HttpException";
 
 let checkToken = (
   req: express.Request,
@@ -10,14 +11,14 @@ let checkToken = (
   let secret: string = process.env.SECRET || "dev-secret";
   if (token) {
     jwt.verify(token, secret, (err: any, decoded: any) => {
-      if (err) return res.status(400).json({ message: "Invalid token." });
+      if (err) return next(new HttpException(401, "Token não informado."));
       else {
         res.locals.decoded = decoded;
         next();
       }
     });
   } else {
-    return res.status(401).json({ message: "Auth token not supplied." });
+    return next(new HttpException(401, "Token de autorização não informado."));
   }
 };
 

@@ -11,3 +11,5 @@ function errorMiddleware(
   const message = error.message || "Algo deu errado.";
   response.status(status).send({ status, message });
 }
+
+export default errorMiddleware;

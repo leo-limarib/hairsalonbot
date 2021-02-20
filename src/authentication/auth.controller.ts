@@ -4,6 +4,7 @@ import userModel from "./user.model";
 import userInterface from "./user.interface";
 import bcrypt from "bcrypt";
 import refreshTokenMiddleware from "../middlewares/refresh";
+import HttpException from "../exceptions/HttpException";
 
 class AuthController {
   public path = "/auth";
@@ -44,9 +45,9 @@ class AuthController {
     if (request.body.email && request.body.password && request.body.name) {
       let userExists = await this.user.findOne({ email: request.body.email });
       if (userExists) {
-        return response
-          .status(409)
-          .json({ message: "Já existe um usuário cadastrado nesse email." });
+        return next(
+          new HttpException(409, "Já existe um usuário cadastrado nesse email.")
+        );
       } else {
         let userData: userInterface = request.body;
         const hashedPass = await bcrypt.hash(userData.password, 10);
@@ -62,9 +63,9 @@ class AuthController {
         });
       }
     } else {
-      return response
-        .status(500)
-        .json({ message: "Por favor, informe todos os campos." });
+      return next(
+        new HttpException(500, "Por favor, preenche todos os campos.")
+      );
     }
   };
 
@@ -89,19 +90,15 @@ class AuthController {
             refreshToken: tokens.refreshToken,
           });
         } else {
-          return response.status(401).json({
-            message: "Email e/ou senha incorretos.",
-          });
+          return next(new HttpException(401, "Email e/ou senha incorretos."));
         }
       } else {
-        return response.status(401).json({
-          message: "Email e/ou senha incorretos.",
-        });
+        return next(new HttpException(401, "Email e/ou senha incorretos."));
       }
     } else {
-      return response
-        .status(500)
-        .json({ message: "Por favor, preencha todos os campos obrigatórios." });
+      return next(
+        new HttpException(500, "Por favor, preencha todos os campos.")
+      );
     }
   };
 
