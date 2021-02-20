@@ -5,8 +5,8 @@ const request = require("supertest");
 
 let app = new App([new authController()], 34523);
 
-afterAll(() => {
-  userModel.deleteOne({ email: "leoteste@gmail.com" });
+afterAll(async () => {
+  await userModel.deleteOne({ email: "leoteste@gmail.com" });
 });
 
 describe("Authentication", () => {
@@ -17,6 +17,15 @@ describe("Authentication", () => {
       password: "leo160897",
     });
     expect(response.status).toBe(200);
+  });
+
+  it("should receive a 409 status (email already registered)", async () => {
+    const response = await request(app.app).post("/auth/signup").send({
+      name: "Leonardo Lima Ribeiro",
+      email: "leoteste@gmail.com",
+      password: "leo160897",
+    });
+    expect(response.status).toBe(409);
   });
 
   it("should login with sucess", async () => {
