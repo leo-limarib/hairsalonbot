@@ -12,7 +12,6 @@ class AuthController {
   private user = userModel;
 
   constructor() {
-    console.log("AUTH CONSTRUCTOR");
     this.initializeRoutes();
   }
 

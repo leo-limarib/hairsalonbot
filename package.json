@@ -11,6 +11,11 @@
   },
   "author": "Leonardo Ribeiro",
   "license": "ISC",
+  "nodemonConfig": {
+    "ignore": [
+      "./session.json"
+    ]
+  },
   "dependencies": {
     "@types/bcrypt": "^3.0.0",
     "@types/express": "^4.17.11",

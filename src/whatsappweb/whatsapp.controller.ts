@@ -1,48 +1,48 @@
+import express from "express";
 import path from "path";
 import fs from "fs";
 import { Client } from "whatsapp-web.js";
-import express from "express";
 
 class WhatsappController {
-  public client: any;
-  public SESSION_FILE_PATH = path.join(__dirname, "..", "session.json");
-  public eventEmitter: any = null;
-  public path = "/bot";
+  private SESSION_FILE = path.join(__dirname, "..", "..", "session.json");
+  private client: any;
+  private sessionCfg: any;
+  public path = "/wpp";
   public router = express.Router();
 
-  contructor() {
-    console.log("WPP CONSTRUCTOR");
-    let sessionCfg = this.loadSessionFile();
-    this.client = new Client({ session: sessionCfg });
-    this.authenticate();
-    this.initializeMessageReceiver();
-  }
-
-  private loadSessionFile() {
-    if (fs.existsSync(this.SESSION_FILE_PATH)) {
-      return require(this.SESSION_FILE_PATH);
+  constructor() {
+    if (fs.existsSync(this.SESSION_FILE)) {
+      this.sessionCfg = require(this.SESSION_FILE);
     }
+    this.client = new Client({ session: this.sessionCfg });
+    this.authenticate();
   }
 
   private authenticate() {
     this.client.on("qr", (qr: any) => {
-      console.log("Qr code received:", qr);
+      console.log("QR RECEIVED:", qr);
     });
     this.client.on("authenticated", (session: any) => {
-      console.log("Whatsapp authenticated!");
-      fs.writeFile(this.SESSION_FILE_PATH, JSON.stringify(session), (err) => {
-        if (err) console.log(err);
-      });
+      console.log("WPP AUTHENTICATED");
+      this.sessionCfg = session;
+      fs.writeFile(
+        this.SESSION_FILE,
+        JSON.stringify(this.sessionCfg),
+        (err) => {
+          if (err) console.log(err);
+        }
+      );
     });
     this.client.on("ready", () => {
-      console.log("Whatsapp bot is ready!");
-      this.initializeMessageReceiver();
+      console.log("WPP READY");
+      this.init();
     });
+    this.client.initialize();
   }
 
-  private initializeMessageReceiver() {
+  private init() {
     this.client.on("message", (message: any) => {
-      console.log("MENSAGEM RECEBIDA:", message.body);
+      console.log("MENSAGEM RECEBIDA", message.body);
     });
   }
 }
