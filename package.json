@@ -24,7 +24,8 @@
     "jsonwebtoken": "^8.5.1",
     "mongodb": "^3.6.4",
     "mongoose": "^5.11.17",
-    "ts-jest": "^26.5.1"
+    "ts-jest": "^26.5.1",
+    "whatsapp-web.js": "^1.12.4"
   },
   "devDependencies": {
     "@babel/core": "^7.12.17",
